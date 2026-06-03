@@ -1,0 +1,37 @@
+client-services-dashboard/
+│
+├── python/
+│   ├── app.py
+│   ├── cleaner.py
+│   ├── ingester.py
+│   ├── schema.py
+│   ├── requirements.txt
+│   └── uploads/
+│
+├── node/
+│   ├── server.js
+│   ├── package.json
+│   ├── routes/
+│   │   ├── upload.js
+│   │   ├── dashboard.js
+│   │   └── ai.js
+│   ├── services/
+│   │   ├── pythonBridge.js
+│   │   ├── dataService.js
+│   │   └── aiService.js
+│   └── public/
+│       ├── index.html
+│       ├── css/dashboard.css
+│       └── js/
+│           ├── main.js
+│           ├── charts.js
+│           ├── filters.js
+│           ├── drilldown.js
+│           └── ai.js
+│
+├── database/              ← auto created
+├── .env                   ← you paste your Grok key here
+├── .env.example
+├── .gitignore
+├── start.bat              ← double click to run everything
+└── README.md

@@ -1,0 +1,21 @@
+# Environment — never commit
+.env
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+python/uploads/*
+!python/uploads/.gitkeep
+
+# Database — stays local
+database/*.db
+
+# Node
+node/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

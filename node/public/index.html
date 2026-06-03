@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Services — COO Dashboard</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">CS</div>
+      <div>
+        <div class="brand-name">ClientOps</div>
+        <div class="brand-sub">COO Command Centre</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">DASHBOARD</div>
+      <a class="nav-item active" data-page="overview" href="#">
+        <svg viewBox="0 0 24 24">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        Overview
+      </a>
+      <a class="nav-item" data-page="clients" href="#">
+        <svg viewBox="0 0 24 24">
+          <rect x="2" y="7" width="20" height="14" rx="2" />
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+        </svg>
+        Clients
+        <span class="nav-badge" id="nav-risk-badge"></span>
+      </a>
+      <a class="nav-item" data-page="team" href="#">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Team Roster
+      </a>
+      <a class="nav-item" data-page="shifts" href="#">
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        Shifts
+      </a>
+      <a class="nav-item" data-page="leads" href="#">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+        Project Leads
+      </a>
+      <a class="nav-item" data-page="ai" href="#">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        AI Assistant
+      </a>
+
+      <div class="nav-label" style="margin-top:16px">DATA</div>
+      <a class="nav-item" data-page="uploads" href="#">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        Upload Data
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="db-status" id="db-status">
+        <span class="status-dot"></span>
+        <span id="db-status-text">Checking...</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="main">
+
+    <!-- ── PAGE: OVERVIEW ─────────────────────────────────────────────── -->
+    <div class="page active" id="page-overview">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Good morning, <span id="greeting-name">COO</span></h1>
+          <p class="page-sub">Client Services overview · <span id="today-date"></span></p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-ghost" onclick="refreshOverview()">
+            <svg viewBox="0 0 24 24" width="14" height="14">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="filter-bar" id="overview-filters">
+        <select class="filter-select" id="filter-client" onchange="applyFilters()">
+          <option value="">All Clients</option>
+        </select>
+        <select class="filter-select" id="filter-category" onchange="applyFilters()">
+          <option value="">All Role Categories</option>
+          <option value="Transcription / Extraction">Transcription / Extraction</option>
+          <option value="Post Processing">Post Processing</option>
+          <option value="Admin">Admin</option>
+          <option value="Ungrouped">Ungrouped</option>
+        </select>
+        <select class="filter-select" id="filter-location" onchange="applyFilters()">
+          <option value="">All Locations</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear filters</button>
+      </div>
+
+      <!-- KPI CARDS -->
+      <div class="kpi-row" id="kpi-row">
+        <div class="kpi-card blue">
+          <div class="kpi-top-bar"></div>
+          <div class="kpi-label">Total Headcount</div>
+          <div class="kpi-value" id="kpi-headcount">—</div>
+          <div class="kpi-sub" id="kpi-headcount-sub">Loading...</div>
+        </div>
+        <div class="kpi-card green clickable" onclick="showClientList()">
+          <div class="kpi-top-bar"></div>
+          <div class="kpi-label">Active Clients</div>
+          <div class="kpi-value" id="kpi-clients">—</div>
+          <div class="kpi-sub">Click to view all</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-top-bar"></div>
+          <div class="kpi-label">Available</div>
+          <div class="kpi-value" id="kpi-available">—</div>
+          <div class="kpi-sub" id="kpi-available-sub">Unassigned analysts</div>
+        </div>
+        <div class="kpi-card purple">
+          <div class="kpi-top-bar"></div>
+          <div class="kpi-label">Multi-Client</div>
+          <div class="kpi-value" id="kpi-multi">—</div>
+          <div class="kpi-sub">On 2+ clients</div>
+        </div>
+      </div>
+
+      <!-- ROLE BUCKETS -->
+      <div class="section-header">
+        <h2 class="section-title">Role Categories</h2>
+        <span class="section-sub">Click any category to see team members</span>
+      </div>
+      <div class="role-buckets" id="role-buckets"></div>
+
+      <!-- EMPLOYEE LIST (drill-down) -->
+      <div class="drilldown-panel" id="drilldown-panel" style="display:none">
+        <div class="drilldown-header">
+          <h3 id="drilldown-title">Team Members</h3>
+          <button class="btn btn-ghost btn-sm" onclick="closeDrilldown()">✕ Close</button>
+        </div>
+        <div id="drilldown-list"></div>
+      </div>
+
+      <!-- CHARTS ROW 1 -->
+      <div class="charts-grid-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Analysts per Client</div>
+            <div class="chart-sub">Click bar to see team</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-clients"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Deployment Status</div>
+          </div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="chart-deployment"></canvas></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 2 -->
+      <div class="charts-grid-3">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Tenure Distribution</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-tenure"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Top Skills</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-skills"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Team by Location</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-locations"></canvas></div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW 3 -->
+      <div class="charts-grid-2">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Role Category Distribution</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chart-roles"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Shift Availability</div>
+          </div>
+          <div class="chart-wrap chart-wrap-sm"><canvas id="chart-shifts"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: CLIENTS ──────────────────────────────────────────────── -->
+    <div class="page" id="page-clients">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Client Portfolio</h1>
+          <p class="page-sub">Coverage, health and analyst assignment per client</p>
+        </div>
+      </div>
+      <div class="clients-grid" id="clients-grid"></div>
+
+      <!-- Client detail panel -->
+      <div class="client-detail-panel" id="client-detail-panel" style="display:none">
+        <div class="drilldown-header">
+          <h3 id="client-detail-title">Client Detail</h3>
+          <button class="btn btn-ghost btn-sm" onclick="closeClientDetail()">✕ Close</button>
+        </div>
+        <div class="client-detail-content" id="client-detail-content"></div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: TEAM ─────────────────────────────────────────────────── -->
+    <div class="page" id="page-team">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Team Roster</h1>
+          <p class="page-sub">All <span id="team-count">—</span> members</p>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <input class="filter-input" id="team-search" placeholder="Search name, skill..." oninput="filterTeam()">
+        <select class="filter-select" id="team-client" onchange="filterTeam()">
+          <option value="">All Clients</option>
+        </select>
+        <select class="filter-select" id="team-category" onchange="filterTeam()">
+          <option value="">All Categories</option>
+          <option value="Transcription / Extraction">Transcription / Extraction</option>
+          <option value="Post Processing">Post Processing</option>
+          <option value="Admin">Admin</option>
+          <option value="Ungrouped">Ungrouped</option>
+        </select>
+        <select class="filter-select" id="team-location" onchange="filterTeam()">
+          <option value="">All Locations</option>
+        </select>
+        <select class="filter-select" id="team-level" onchange="filterTeam()">
+          <option value="">All Levels</option>
+          <option value="Senior">Senior</option>
+          <option value="Analyst">Analyst</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="team-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Level</th>
+              <th>Client(s)</th>
+              <th>Tenure</th>
+              <th>Location</th>
+              <th>Categories</th>
+              <th>Skills</th>
+              <th>Shifts</th>
+            </tr>
+          </thead>
+          <tbody id="team-tbody"></tbody>
+        </table>
+      </div>
+      <!-- Employee profile modal -->
+      <div class="modal-overlay" id="emp-modal" onclick="closeEmpModal(event)">
+        <div class="modal" id="emp-modal-content"></div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: SHIFTS ───────────────────────────────────────────────── -->
+    <div class="page" id="page-shifts">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Shift & Availability</h1>
+          <p class="page-sub">Who is available for which shift type</p>
+        </div>
+      </div>
+      <div class="shift-kpis" id="shift-kpis"></div>
+      <div class="shift-grid" id="shift-grid"></div>
+    </div>
+
+    <div class="page" id="page-leads">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Project Leads</h1>
+          <p class="page-sub">Primary and secondary accountability per client</p>
+        </div>
+      </div>
+      <div id="leads-grid" class="leads-grid"></div>
+    </div>
+
+    <!-- ── PAGE: AI ───────────────────────────────────────────────────── -->
+    <div class="page" id="page-ai">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">AI Assistant</h1>
+          <p class="page-sub">Powered by Grok · Ask anything about your team</p>
+        </div>
+        <button class="btn btn-primary" onclick="refreshInsights()">
+          ↻ Refresh Insights
+        </button>
+      </div>
+
+      <div class="ai-insights-card" id="ai-insights-card">
+        <div class="ai-insights-header">
+          <span class="ai-badge">AI</span>
+          <span>Live Team Insights</span>
+          <span class="ai-loading" id="insights-loading">Generating...</span>
+        </div>
+        <div class="ai-insights-body" id="ai-insights-body">
+          Loading insights...
+        </div>
+      </div>
+
+      <div class="ai-chat-wrap">
+        <div class="ai-chat-messages" id="ai-chat-messages">
+          <div class="ai-msg ai">
+            <div class="ai-msg-avatar">AI</div>
+            <div class="ai-msg-text">
+              Hello! I have full visibility into your team data. Ask me anything — coverage gaps, skill availability,
+              who to assign to a new client, shift availability, and more.
+            </div>
+          </div>
+        </div>
+        <div class="ai-chat-input-row">
+          <input class="ai-input" id="ai-input" placeholder="e.g. Who can I put on a US-timezone client?"
+            onkeydown="if(event.key==='Enter') sendAiMessage()">
+          <button class="btn btn-primary" onclick="sendAiMessage()">Send</button>
+        </div>
+        <div class="ai-suggestions">
+          <span class="ai-sug-label">Try:</span>
+          <button class="sug-chip" onclick="askSuggestion(this)">Who has the most clients?</button>
+          <button class="sug-chip" onclick="askSuggestion(this)">Which client has weakest coverage?</button>
+          <button class="sug-chip" onclick="askSuggestion(this)">Who knows Python and is available?</button>
+          <button class="sug-chip" onclick="askSuggestion(this)">Who can cover Regeneron if Swati is on leave?</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: UPLOADS ─────────────────────────────────────────────── -->
+    <div class="page" id="page-uploads">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Upload Data</h1>
+          <p class="page-sub">Upload Excel file to update team data</p>
+        </div>
+      </div>
+
+      <div class="upload-zone" id="upload-zone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)">
+        <div class="upload-icon">
+          <svg viewBox="0 0 24 24" width="48" height="48">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+        </div>
+        <div class="upload-text">Drag & drop your Excel file here</div>
+        <div class="upload-sub">or</div>
+        <label class="btn btn-primary upload-btn">
+          Browse File
+          <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none"
+            onchange="handleFileSelect(event)">
+        </label>
+        <div class="upload-hint">Supports .xlsx and .xls · Max 10MB</div>
+      </div>
+
+      <div class="upload-progress" id="upload-progress" style="display:none">
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Processing...</div>
+      </div>
+
+      <div class="upload-result" id="upload-result" style="display:none"></div>
+
+      <div class="upload-history-wrap">
+        <h3 class="section-title">Upload History</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Uploaded</th>
+                <th>Found</th>
+                <th>Inserted</th>
+                <th>Updated</th>
+                <th>Skipped</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="upload-history-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/charts.js"></script>
+  <script src="/js/filters.js"></script>
+  <script src="/js/drilldown.js"></script>
+  <script src="/js/ai.js"></script>
+</body>
+
+</html>
